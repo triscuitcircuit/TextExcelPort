@@ -75,7 +75,7 @@ fn main(){
 enum Cell {
     Text(String),
     Number(f64),
-    //Formula,
+    Formula(FormulaCell),
     Empty,
 }
 impl Cell{
@@ -83,7 +83,7 @@ impl Cell{
         match self {
             Cell::Text(string) =>{cell_text_spaces(string.to_string().borrow())},
             Cell::Number(number) =>{cell_text_spaces(number.to_string().borrow())},
-            //Cell::Formula(_formula_cell) => {cell_text_spaces(&self.get_value().unwrap_or(0.0).to_string())},
+            Cell::Formula(form) => {cell_text_spaces(&self.get_value().unwrap_or(0.0).to_string())},
             Cell::Empty => " ".repeat(10).to_string(),
         }
     }
@@ -92,7 +92,7 @@ impl Cell{
         match self {
             Cell::Text(string) => format!("\"{}\"", string.clone()),
             Cell::Number(number) => number.to_string(),
-            //Cell::Formula(string)=> string.get_text(),
+            Cell::Formula(string)=> string.get_text(),
             Cell::Empty => String::from(" "),
         }
     }
@@ -100,10 +100,78 @@ impl Cell{
         match self {
             Cell::Text(string) =>format!("\"{}\"", string.clone()),
             Cell::Number(number) =>number.to_string(),
-            //Cell::Formula(_formula_cell) => {self.get_value().unwrap_or(0.0).to_string().to_string()},
+            Cell::Formula(_formula_cell) => {self.get_value().unwrap_or(0.0).to_string().to_string()},
             Cell::Empty => " ".to_string(),
         }
     }
+    pub fn get_value(&self) -> Option<f64> {
+        match self {
+            Cell::Number(number) => Some(*number),
+            Cell::Formula(formula) => Some(match formula.string_to_f64(){
+                Ok(out) => out,
+                Err(e) => 0.0,
+            }),
+            Cell::Text(_) => None,
+            Cell::Empty => None,
+        }
+    }
+}
+#[derive(Debug,Clone)]
+struct FormulaCell{
+    command: String,
+}
+impl FormulaCell{
+    pub fn new(input: String)->FormulaCell{
+        self::FormulaCell{
+            command:input,
+        }
+    }
+    pub fn string_to_f64(&self)-> Result<f64,SpreadsheetError>{
+        let input = &self.command[1..self.command.len()-1];
+        let mut input_arr:Vec<String> = input.split_whitespace().map(|x| x.to_string()).collect();
+        for i in 0..input_arr.len(){
+            if input_arr[0].len() == 2 as usize && &input_arr[0].to_uppercase().as_bytes()[0] >= &65{
+                let row:u8 = input_arr[0].to_uppercase().as_bytes()[0]-65;
+                let col: u8 = match input_arr[0].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>(){
+                    Ok(output)=> output,
+                    Err(_e) => 0,
+                };
+                {
+                    let db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
+                    input_arr[i] = db[row as usize][(col - 1) as usize].base_text();
+                };
+            }
+        }
+        match input_arr[0].to_uppercase().as_ref(){
+            "AVG"=>{
+                return Ok(2.0)
+            }
+            "SUM"=>{
+                return Ok(3.0)
+            }
+            _=>{
+                let mut poor:f64 = input_arr[0].parse().unwrap_or(0.0);
+                for i in 0..input_arr.len(){
+                    if input_arr[i]=="+"{
+                        poor += input_arr[i+1].parse::<f64>().unwrap_or(0.0);
+                    }
+                    if input_arr[i]=="-"{
+                        poor -= input_arr[i+1].parse::<f64>().unwrap_or(0.0);
+                    }
+                    if input_arr[i]=="*"{
+                        poor *= input_arr[i+1].parse::<f64>().unwrap_or(0.0);
+                    }
+                    if input_arr[i]=="/"{
+                        poor /= input_arr[i+1].parse::<f64>().unwrap_or(0.0);
+                    }
+
+                }
+                return Ok(poor);
+            }
+        }
+        return Ok(64.0);
+    }
+    pub fn get_text(&self) -> String{ (&self.command).parse().unwrap() }
 }
 fn get_grid_text() -> Result<String,SpreadsheetError> {
     let db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
@@ -186,7 +254,7 @@ fn process_command(input:String) -> Result<String,SpreadsheetError>{
                 if input.len() >= 3 {
                     let input_two = input[2];
                     if &input_two[0..1] == "(" && &input_two[input_two.len() - 1..input_two.len()] == ")" {
-                        db[row as usize][col as usize] = Cell::Text("FormulaCell".parse().unwrap());
+                        db[row as usize][col as usize] = Cell::Formula(FormulaCell::new(input_two.parse().unwrap()));
                     } else if &input_two[0..1] == "\"" && &input_two[input_two.len() - 1..input_two.len()] == "\"" {
                         db[row as usize][col as usize] = Cell::Text(input_two[1..input_two.len() - 1].to_string());
                     } else {

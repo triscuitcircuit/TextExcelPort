@@ -146,10 +146,7 @@ fn process_command(input:String) -> Result<String,SpreadsheetError>{
     let input: Vec<&str> = input.splitn(3,' ').collect();
     match input[0].to_uppercase().as_ref() {
         "SORTA"=>{
-            Ok(String::from("Command Sorta entered"))
-        }
-        "SORTD"=>{
-            Ok(String::from("command Sortd entered"))
+            Ok(String::from("Command SORTA entered"))
         }
         "CLEAR"=>{
             if input.len() == 2{
@@ -169,47 +166,40 @@ fn process_command(input:String) -> Result<String,SpreadsheetError>{
                     }
                 }
             }
-            Ok(get_grid_text().expect("An error occured"))
+            return Ok(get_grid_text().expect(""));
+        }
+        "SORTD"=>{
+            Ok(String::from("Command SORTD entered"))
         }
         "QUIT"|"STOP"=> {
             println!("Quitting...");
             Err(SpreadsheetError::ExitRequested)
         }
-        "PRINT"=>{
-            match get_grid_text(){
-              Ok(out) =>{
-                  println!("{}", get_grid_text().expect("String"));
-              }
-                _=>{
-                    return Ok("".to_string())
-                }
-            };
-            Ok("".to_string())
-        }
         _ =>{
-            let mut db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
-            let col:u8 = input[0].to_uppercase().as_bytes()[0] -65;
-            let row: u8 = match input[0].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
-              Ok(output) => output-1,
-                Err(e) => return Err(SpreadsheetError::ParseIntError(e)),
-            };
-            if input.len() >= 3{
-                let input_two = input[2];
-                if &input_two[0..1] == "("&& &input_two[input_two.len() - 1..input_two.len()] == ")"{
-                    db[row as usize][col as usize] = Cell::Text("FormulaCell".parse().unwrap());
-                }else if &input_two[0..1] == "\"" && &input_two[input_two.len() - 1..input_two.len()] == "\"" {
-                    db[row as usize][col as usize] = Cell::Text(input_two[1..input_two.len() - 1].to_string());
-                }else{
-                    db[row as usize][col as usize] = Cell::Number(match input_two.parse::<f64>(){
-                       Ok(num) => num,
-                        Err(e) => return Err(SpreadsheetError::ParseFloatError(e))
-                    });
+            {
+                let mut db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
+                let row: u8 = input[0].to_uppercase().as_bytes()[0] - 65;
+                let col: u8 = match input[0].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                    Ok(output) => output - 1,
+                    Err(e) => return Err(SpreadsheetError::ParseIntError(e)),
+                };
+                if input.len() >= 3 {
+                    let input_two = input[2];
+                    if &input_two[0..1] == "(" && &input_two[input_two.len() - 1..input_two.len()] == ")" {
+                        db[row as usize][col as usize] = Cell::Text("FormulaCell".parse().unwrap());
+                    } else if &input_two[0..1] == "\"" && &input_two[input_two.len() - 1..input_two.len()] == "\"" {
+                        db[row as usize][col as usize] = Cell::Text(input_two[1..input_two.len() - 1].to_string());
+                    } else {
+                        db[row as usize][col as usize] = Cell::Number(match input_two.parse::<f64>() {
+                            Ok(num) => num,
+                            Err(e) => return Err(SpreadsheetError::ParseFloatError(e))
+                        });
+                    }
+                } else {
+                    return Ok("cell value: ".to_owned() + &db[row as usize][col as usize].full_text());
                 }
-            }else{
-                return Ok(db[row as usize][col as usize].full_text());
             }
-
-            return Ok(get_grid_text().expect("Spreadsheet error"))
+            return Ok(get_grid_text().expect(""));
         }
     }
 }

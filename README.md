@@ -1,6 +1,6 @@
 # TextExcelPort
 
-A mini version of a Microsfot Excel like program (inputs done by command line) written in Rust. 
+A mini version of a Microsoft Excel like program (inputs done by command line) written in Rust. 
 
 
 

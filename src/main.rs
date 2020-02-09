@@ -6,20 +6,22 @@ Friday, Nov 29 2019
 #[macro_use]
 extern crate lazy_static;
 extern crate yard;
-use yard::{parser, evaluator, evaluate};
 
-use std::{io, num};
+use yard::{parser, evaluator};
+
+use std::{io};
 use std::borrow::Borrow;
 use std::fs;
-use std::io::{BufReader, Empty, Read};
+use std::io::{BufReader, Empty, Read, stdout};
 use std::path::Path;
 use serde::{Serialize, Deserialize};
 use serde_json;
 use std::fs::File;
 use std::sync::{Arc, Mutex};
 use serde_json::value::Value::Array;
-use std::sync::mpsc::{channel, Sender};
+//use std::sync::mpsc::{channel, Sender};
 use std::num::ParseIntError;
+use std::io::Write;
 
 #[derive(Debug)]
 enum SpreadsheetError {
@@ -32,13 +34,14 @@ enum SpreadsheetError {
 }
 
 lazy_static!{
-    static ref GRID: Mutex<Vec<Vec<Cell>>> = Mutex::new(vec![vec![Cell::Empty; 10]; 10]);
+    static ref GRID: Mutex<Vec<Vec<Cell>>> = Mutex::new(vec![vec![Cell::Empty; 17]; 17]);
 }
 
 
 fn main(){
     let game: bool = true;
     while game{
+
         let mut readin = String::new();
         io::stdin().read_line(&mut readin).unwrap();
         let mut iterate = readin.lines();
@@ -52,7 +55,11 @@ fn main(){
                 },
                 _=>{
                     match process_command(String::from(input)){
-                        Ok(output) => println!("{}",output),
+                        Ok(output) => {
+                            print!("\x1B[2J");
+                            println!("{}",output);
+
+                        },
                         Err(SpreadsheetError::ExitRequested)=> std::process::exit(1),
                         Err(SpreadsheetError::IndexError)=> println!("Index error, please try again"),
                         Err(SpreadsheetError::MutexError)=>println!("Try again"),
@@ -216,7 +223,11 @@ fn process_command(input:String) -> Result<String,SpreadsheetError>{
         "SORTA"=>{
             Ok(String::from("Command SORTA entered"))
         }
+        "PRINT"|"SPREADSHEET"|"SPREAD"=>{
+            Ok(get_grid_text().expect(""))
+        }
         "CLEAR"=> {
+            println!("{}",input.len());
             if input.len() == 2 {
                 let row = (input[1].to_uppercase().as_bytes()[0] - 65) as usize;
                 let col_str = input[0].trim_end_matches(|c: char| !c.is_ascii_digit());

@@ -3,6 +3,7 @@ Copyright: Tristan Zippert
 University of Maine Computer Science
 Friday, Nov 29 2019
 */
+
 #[macro_use]
 extern crate lazy_static;
 extern crate yard;
@@ -23,6 +24,7 @@ use serde_json::value::Value::Array;
 use std::num::ParseIntError;
 use std::io::Write;
 
+
 #[derive(Debug)]
 enum SpreadsheetError {
     ParseIntError(std::num::ParseIntError),
@@ -39,9 +41,7 @@ lazy_static!{
 
 
 fn main(){
-    let game: bool = true;
-    while game{
-
+    loop{
         let mut readin = String::new();
         io::stdin().read_line(&mut readin).unwrap();
         let mut iterate = readin.lines();
@@ -158,13 +158,75 @@ impl FormulaCell{
                 }
             }
         }
-        match input.to_uppercase().as_ref(){
+        match input_arr[0].to_uppercase().as_ref(){
             "AVG"=>{
+                if input_arr.len() >= 2 {
+                    let input_loc:Vec<String> = input_arr[1]
+                        .split("-").map(|x| x.to_string()).collect();
+                    let (start_row, start_col): (u8,u8) = (input_loc[0].to_uppercase().as_bytes()[0] - 65,
+                    match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                        Ok(output) => output,
+                        Err(_e) => 0,
+                    });
+                    let (end_row, end_col): (u8,u8) = (input_loc[1].to_uppercase().as_bytes()[0] - 65,
+                       match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                           Ok(output) => output,
+                           Err(_e) => 0,
+                       });
+                    let mut var: f64 = 0.0;
+                    let mut times = 0.0;
+                    for c in start_col..=end_col {
+                        for r in start_row..=end_row{
+                            times += 1.0;
+                            {
+                                let db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
+                                let spreadsheet = db.clone();
+                                std::mem::drop(db);
+                                var += match spreadsheet[c as usize][r as usize].get_value() {
+                                    Some(t) => t,
+                                    None => 0.0,
+                                } as f64;
+                            }
+                        }
+                    }
+                    println!("{}",var/times);
+                    return Ok(var/times)
+                }
 
-                return Ok(2.0)
+                return Ok(0.0)
             }
             "SUM"=>{
-                return Ok(3.0)
+                if input_arr.len() >= 2 {
+                    let input_loc:Vec<String> = input_arr[1]
+                        .split("-").map(|x| x.to_string()).collect();
+                    let (start_row, start_col): (u8,u8) = (input_loc[0].to_uppercase().as_bytes()[0] - 65,
+                       match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                           Ok(output) => output,
+                           Err(_e) => 0,
+                       });
+                    let (end_row, end_col): (u8,u8) = (input_loc[1].to_uppercase().as_bytes()[0] - 65,
+                       match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                           Ok(output) => output,
+                           Err(_e) => 0,
+                       });
+                    let mut var: f64 = 0.0;
+                    for c in start_col..=end_col {
+                        for r in start_row..=end_row{
+                            {
+                                let db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
+                                let spreadsheet = db.clone();
+                                std::mem::drop(db);
+                                var += match spreadsheet[c as usize][r as usize].get_value() {
+                                    Some(t) => t,
+                                    None => 0.0,
+                                } as f64;
+                            }
+                        }
+                    }
+                    println!("{}",var);
+                    return Ok(var)
+                }
+                return Ok(0.0)
             }
             _=>{
                 if let Ok(tokens) = parser::parse(&input_arr.join(" ")){
@@ -220,6 +282,9 @@ fn cell_text_spaces(string: &String) -> String {
 fn process_command(input:String) -> Result<String,SpreadsheetError>{
     let input: Vec<&str> = input.splitn(3,' ').collect();
     match input[0].to_uppercase().as_ref() {
+        "SAVE"=>{
+            Ok(String::from("Saved"))
+        }
         "SORTA"=>{
             Ok(String::from("Command SORTA entered"))
         }

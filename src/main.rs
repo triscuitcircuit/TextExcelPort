@@ -59,6 +59,7 @@ fn main(){
                             print!("\x1B[2J");
                             println!("{}",output);
 
+
                         },
                         Err(SpreadsheetError::ExitRequested)=> std::process::exit(1),
                         Err(SpreadsheetError::IndexError)=> println!("Index error, please try again"),
@@ -89,6 +90,9 @@ enum Cell {
     Empty,
 }
 impl Cell{
+    pub fn compare(&self, other: Cell)->u8{
+        2
+    }
     pub fn cell_text(&self) -> String {
         match self {
             Cell::Text(string) =>{cell_text_spaces(string.to_string().borrow())},
@@ -159,42 +163,6 @@ impl FormulaCell{
             }
         }
         match input_arr[0].to_uppercase().as_ref(){
-            "AVG"=>{
-                if input_arr.len() >= 2 {
-                    let input_loc:Vec<String> = input_arr[1]
-                        .split("-").map(|x| x.to_string()).collect();
-                    let (start_row, start_col): (u8,u8) = (input_loc[0].to_uppercase().as_bytes()[0] - 65,
-                    match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
-                        Ok(output) => output,
-                        Err(_e) => 0,
-                    });
-                    let (end_row, end_col): (u8,u8) = (input_loc[1].to_uppercase().as_bytes()[0] - 65,
-                       match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
-                           Ok(output) => output,
-                           Err(_e) => 0,
-                       });
-                    let mut var: f64 = 0.0;
-                    let mut times = 0.0;
-                    for c in start_col..=end_col {
-                        for r in start_row..=end_row{
-                            times += 1.0;
-                            {
-                                let db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
-                                let spreadsheet = db.clone();
-                                std::mem::drop(db);
-                                var += match spreadsheet[c as usize][r as usize].get_value() {
-                                    Some(t) => t,
-                                    None => 0.0,
-                                } as f64;
-                            }
-                        }
-                    }
-                    println!("{}",var/times);
-                    return Ok(var/times)
-                }
-
-                return Ok(0.0)
-            }
             "SUM"=>{
                 if input_arr.len() >= 2 {
                     let input_loc:Vec<String> = input_arr[1]
@@ -212,6 +180,7 @@ impl FormulaCell{
                     let mut var: f64 = 0.0;
                     for c in start_col..=end_col {
                         for r in start_row..=end_row{
+                            println!("{} {}",c,r);
                             {
                                 let db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
                                 let spreadsheet = db.clone();
@@ -233,6 +202,43 @@ impl FormulaCell{
                     let result = evaluator::eval(&tokens);
                     return Ok(result as f64);
                 }
+                return Ok(0.0)
+            }
+            "AVG"=>{
+                if input_arr.len() >= 2 {
+                    let input_loc:Vec<String> = input_arr[1]
+                        .split("-").map(|x| x.to_string()).collect();
+                    let (start_row, start_col): (u8,u8) = (input_loc[0].to_uppercase().as_bytes()[0] - 65,
+                                                           match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                                                               Ok(output) => output,
+                                                               Err(_e) => 0,
+                                                           });
+                    let (end_row, end_col): (u8,u8) = (input_loc[1].to_uppercase().as_bytes()[0] - 65,
+                                                       match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                                                           Ok(output) => output,
+                                                           Err(_e) => 0,
+                                                       });
+                    let mut var: f64 = 0.0;
+                    let mut times = 0.0;
+
+                        for c in start_col..=end_col {
+                            for r in start_row..=end_row{
+                                times += 1.0;
+                                {
+                                    let db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
+                                    let spreadsheet = db.clone();
+                                    std::mem::drop(db);
+                                    var += match spreadsheet[c as usize][r as usize].get_value() {
+                                        Some(t) => t,
+                                        None => 0.0,
+                                    } as f64;
+                            }
+                        }
+                    }
+                    println!("{}",var/times);
+                    return Ok(var/times)
+                }
+
                 return Ok(0.0)
             }
         }
@@ -291,31 +297,48 @@ fn process_command(input:String) -> Result<String,SpreadsheetError>{
         "PRINT"|"SPREADSHEET"|"SPREAD"=>{
             Ok(get_grid_text().expect(""))
         }
+        "SORTD"=>{
+            Ok(String::from("Command SORTD entered"))
+        }
         "CLEAR"=> {
-            println!("{}",input.len());
             if input.len() == 2 {
-                let row = (input[1].to_uppercase().as_bytes()[0] - 65) as usize;
-                let col_str = input[0].trim_end_matches(|c: char| !c.is_ascii_digit());
-                let col = match col_str.parse::<usize>() {
-                    Ok(num) => num - 1,
+                let mut db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
+                let row: u8 = input[1].to_uppercase().as_bytes()[0] - 65;
+                let col: u8 = match input[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                    Ok(output) => output - 1,
                     Err(e) => return Err(SpreadsheetError::ParseIntError(e)),
                 };
+                db[row as usize][col as usize] = Cell::Empty;
+
             } else {
                 {
-                let mut db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
-                let row = db.len();
-                let col = db[0].len();
-                for r in 0..row {
-                    for c in 0..col {
-                        db[r][c] = Cell::Empty;
+                    let mut db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
+                    let row = db.len();
+                    let col = db[0].len();
+                    for r in 0..row {
+                        for c in 0..col {
+                            db[r][c] = Cell::Empty;
+                        }
                     }
                 }
             }
-        }
             return Ok(get_grid_text().expect(""));
         }
-        "SORTD"=>{
-            Ok(String::from("Command SORTD entered"))
+        "MEM"=>{
+            if input.len() >= 2{
+                let db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
+                let row: u8 = input[1].to_uppercase().as_bytes()[0] - 65;
+                let col: u8 = match input[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                    Ok(output) => output - 1,
+                    Err(e) => return Err(SpreadsheetError::ParseIntError(e)),
+                };
+                Ok(String::from(format!("{:p}",&db[row as usize][col as usize])))
+            }else{
+                {
+                    let mut db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
+                    Ok(String::from(format!("{:p}", &db)))
+                }
+            }
         }
         "QUIT"|"STOP"=> {
             println!("Quitting...");

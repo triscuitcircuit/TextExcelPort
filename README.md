@@ -1,4 +1,4 @@
-# TextExcelPort
+# TextExcelPort https://travis-ci.org/Triscuit-circuit/TextExcelPort.svg?branch=master
 
 A mini version of a Microsoft Excel like program (inputs done by command line) written in Rust. 
 

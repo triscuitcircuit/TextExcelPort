@@ -4,13 +4,16 @@ University of Maine Computer Science
 Friday, Nov 29 2019
 */
 
+mod lib;
+
+
 #[macro_use]
 extern crate lazy_static;
 extern crate yard;
 
 use yard::{parser, evaluator};
 
-use std::{io};
+use std::{io, env};
 use std::borrow::Borrow;
 use std::fs;
 use std::io::{BufReader, Empty, Read, stdout};
@@ -20,9 +23,28 @@ use serde_json;
 use std::fs::File;
 use std::sync::{Arc, Mutex};
 use serde_json::value::Value::Array;
-//use std::sync::mpsc::{channel, Sender};
 use std::num::ParseIntError;
 use std::io::Write;
+
+extern crate getopts;
+use getopts::Options;
+
+fn term_main()-> Result<i32,()>{
+
+}
+
+fn main(){
+
+    text_version()
+}
+
+fn version() -> Result<i32,()>{
+    println!("TextExcelPort {}", env!("CARGO_PKG_VERSION"))
+    println!("Copyright 2019 Tristan Zippert");
+    Ok(0)
+}
+
+
 
 
 #[derive(Debug)]
@@ -38,49 +60,36 @@ enum SpreadsheetError {
 lazy_static!{
     static ref GRID: Mutex<Vec<Vec<Cell>>> = Mutex::new(vec![vec![Cell::Empty; 17]; 17]);
 }
-
-
-fn main(){
-    loop{
+fn text_version(){
+    loop {
         let mut readin = String::new();
         io::stdin().read_line(&mut readin).unwrap();
         let mut iterate = readin.lines();
         let input = iterate.next().unwrap();
-        if 2 > input.len(){
+        if 2 > input.len() {
             println!("Please enter a proper command");
-        }else{
-            match input.to_uppercase().as_ref(){
-                "LOAD"=>{
-                    println!("{}\n{:#?}","Loading...",get_grid_text())
+        } else {
+            match input.to_uppercase().as_ref() {
+                "LOAD" => {
+                    println!("{}\n{:#?}", "Loading...", get_grid_text())
                 },
-                _=>{
-                    match process_command(String::from(input)){
+                _ => {
+                    match process_command(String::from(input)) {
                         Ok(output) => {
                             print!("\x1B[2J");
-                            println!("{}",output);
-
+                            println!("{}", output);
                         },
-                        Err(SpreadsheetError::ExitRequested)=> std::process::exit(1),
-                        Err(SpreadsheetError::IndexError)=> println!("Index error, please try again"),
-                        Err(SpreadsheetError::MutexError)=>println!("Try again"),
-                        Err(SpreadsheetError::ParseIntError(_e))=>println!("Try again"),
-                        Err(e) => eprintln!("{:#?}",e),
+                        Err(SpreadsheetError::ExitRequested) => std::process::exit(1),
+                        Err(SpreadsheetError::IndexError) => println!("Index error, please try again"),
+                        Err(SpreadsheetError::MutexError) => println!("Try again"),
+                        Err(SpreadsheetError::ParseIntError(_e)) => println!("Try again"),
+                        Err(e) => eprintln!("{:#?}", e),
                     }
                 }
             }
         }
-
     }
-
 }
-//fn get_val(r: &usize,c: &usize)->Result<Cell,SpreadsheetError>{
-//    let mut db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
-//    Ok(db[*c as usize][*r as usize])
-//}
-//fn get_row(r:&usize)->Result<Vec<Cell>,SpreadsheetError>{
-//    let mut db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
-//    Ok(db[*r as usize])
-//}
 #[derive(Debug, Clone)]
 enum Cell {
     Text(String),
@@ -164,15 +173,15 @@ impl FormulaCell{
                     let input_loc:Vec<String> = input_arr[1]
                         .split("-").map(|x| x.to_string()).collect();
                     let (start_row, start_col): (u8,u8) = (input_loc[0].to_uppercase().as_bytes()[0] - 65,
-                    match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
-                        Ok(output) => output,
-                        Err(_e) => 0,
-                    });
+                                                           match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                                                               Ok(output) => output,
+                                                               Err(_e) => 0,
+                                                           });
                     let (end_row, end_col): (u8,u8) = (input_loc[1].to_uppercase().as_bytes()[0] - 65,
-                       match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
-                           Ok(output) => output,
-                           Err(_e) => 0,
-                       });
+                                                       match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                                                           Ok(output) => output,
+                                                           Err(_e) => 0,
+                                                       });
                     let mut var: f64 = 0.0;
                     let mut times = 0.0;
                     for c in start_col..=end_col {
@@ -200,15 +209,15 @@ impl FormulaCell{
                     let input_loc:Vec<String> = input_arr[1]
                         .split("-").map(|x| x.to_string()).collect();
                     let (start_row, start_col): (u8,u8) = (input_loc[0].to_uppercase().as_bytes()[0] - 65,
-                       match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
-                           Ok(output) => output,
-                           Err(_e) => 0,
-                       });
+                                                           match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                                                               Ok(output) => output,
+                                                               Err(_e) => 0,
+                                                           });
                     let (end_row, end_col): (u8,u8) = (input_loc[1].to_uppercase().as_bytes()[0] - 65,
-                       match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
-                           Ok(output) => output,
-                           Err(_e) => 0,
-                       });
+                                                       match input_loc[1].trim_start_matches(|c: char| !c.is_ascii_digit()).parse::<u8>() {
+                                                           Ok(output) => output,
+                                                           Err(_e) => 0,
+                                                       });
                     let mut var: f64 = 0.0;
                     for c in start_col..=end_col {
                         for r in start_row..=end_row{
@@ -240,30 +249,30 @@ impl FormulaCell{
     pub fn get_text(&self) -> String{ (&self.command).parse().unwrap() }
 }
 fn get_grid_text() -> Result<String,SpreadsheetError> {
-        let db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
-        let row: u8 = db.len() as u8;
-        let col: u8 = db[0].len() as u8;
-        let start: u8 = 65;
-        let mut top = String::from("   |");
-        let mut bottom = String::new();
-        let grid = db.clone();
-        std::mem::drop(db);
-        for i in 0..col {
-            top.push_str(&format!("{}{}|", (start + i) as char, " ".repeat(9)));
+    let db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
+    let row: u8 = db.len() as u8;
+    let col: u8 = db[0].len() as u8;
+    let start: u8 = 65;
+    let mut top = String::from("   |");
+    let mut bottom = String::new();
+    let grid = db.clone();
+    std::mem::drop(db);
+    for i in 0..col {
+        top.push_str(&format!("{}{}|", (start + i) as char, " ".repeat(9)));
+    }
+    for i in 0..row {
+        if i >= 9 {
+            bottom.push_str(&format!("{} |", i + 1));
+        } else {
+            bottom.push_str(&format!("{}  |", i + 1));
         }
-        for i in 0..row {
-            if i >= 9 {
-                bottom.push_str(&format!("{} |", i + 1));
-            } else {
-                bottom.push_str(&format!("{}  |", i + 1));
-            }
-            for a in 0..col {
+        for a in 0..col {
 
-                bottom.push_str(&format!("{}|", grid[a as usize][i as usize].cell_text()));
-            }
-            bottom.push('\n');
+            bottom.push_str(&format!("{}|", grid[a as usize][i as usize].cell_text()));
         }
-        Ok(format!("{}\n{}", top, bottom))
+        bottom.push('\n');
+    }
+    Ok(format!("{}\n{}", top, bottom))
 
 }
 fn cell_text_spaces(string: &String) -> String {
@@ -302,16 +311,16 @@ fn process_command(input:String) -> Result<String,SpreadsheetError>{
                 };
             } else {
                 {
-                let mut db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
-                let row = db.len();
-                let col = db[0].len();
-                for r in 0..row {
-                    for c in 0..col {
-                        db[r][c] = Cell::Empty;
+                    let mut db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
+                    let row = db.len();
+                    let col = db[0].len();
+                    for r in 0..row {
+                        for c in 0..col {
+                            db[r][c] = Cell::Empty;
+                        }
                     }
                 }
             }
-        }
             return Ok(get_grid_text().expect(""));
         }
         "SORTD"=>{

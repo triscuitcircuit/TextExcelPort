@@ -39,9 +39,9 @@ fn main(){
 }
 
 fn version() -> Result<i32,()>{
-    println!("TextExcelPort {}", env!("CARGO_PKG_VERSION"))
+    println!("TextExcelPort {}", env!("CARGO_PKG_VERSION"));
     println!("Copyright 2019 Tristan Zippert");
-    Ok(0)
+    Ok((0))
 }
 
 

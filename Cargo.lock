@@ -219,13 +219,11 @@ dependencies = [
  "crossterm",
  "filetime",
  "getopts",
- "lazy_static",
  "regex",
  "serde",
  "serde_json",
  "tempfile",
  "textexcelport_core",
- "yard",
 ]
 
 [[package]]
@@ -2419,8 +2417,12 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "eval",
+ "lazy_static",
+ "serde",
+ "serde_json",
  "thiserror",
  "time",
+ "yard",
 ]
 
 [[package]]

@@ -11,20 +11,12 @@ use std::{
   io::{ Write, BufReader, Empty,Read, stdout}
 };
 use std::default::default;
+use crate::exec::*;
 
 lazy_static!{
     pub static ref GRID: Mutex<Vec<Vec<Cell>>> = Mutex::new(vec![vec![Cell::Empty; 17]; 17]);
 }
 
-#[derive(Debug)]
-pub enum SpreadsheetError{
-    ParseIntError(std::num::ParseIntError),
-    ParseFloatError(std::num::ParseFloatError),
-    MutexError,
-    IndexError,
-    NotNumberError,
-    ExitRequested
-}
 #[derive(Debug)]
 enum SpreadsheetResult<T>{
     Error(SpreadsheetError),
@@ -318,7 +310,7 @@ pub fn process_command(input:String) -> Result<String,SpreadsheetError>{
         }
     }
 }
-fn get_grid_text() -> Result<String,SpreadsheetError> {
+pub fn get_grid_text() -> Result<String,SpreadsheetError> {
     let db = GRID.lock().map_err(|_| SpreadsheetError::MutexError)?;
     let row: u8 = db.len() as u8;
     let col: u8 = db[0].len() as u8;

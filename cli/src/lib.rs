@@ -1,14 +1,14 @@
 #![feature(core_intrinsics)]
 use async_trait::async_trait;
 use crossterm::{cursor, event, execute, style, terminal, tty::IsTty, QueueableCommand, ErrorKind};
-use textexcelport_core::{console,bst,grid};
+use textexcelport_core::{console, structures, grid};
 use crossterm::event::KeyCode;
 use textexcelport_core::console::{Position, ClearType, Key};
 use std::{
     cell::RefCell,cmp::Ordering, collections::VecDeque,
     env,io::{self,Write},path::Path,rc::Rc
 };
-use std::ffi::OsString;
+
 
 /// Converts a 'Crossterm:;ErrorKind' to an 'io::Error' for the terminal
 fn crossterm_error_to_io_error(e: crossterm::ErrorKind)-> io::Error{

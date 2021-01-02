@@ -1094,9 +1094,9 @@ dependencies = [
  "getopts",
  "iced",
  "iced_native",
- "lazy_static",
  "serde",
  "serde_json",
+ "textexcelport_core",
  "yard",
 ]
 

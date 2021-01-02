@@ -1,7 +1,7 @@
 #![feature(core_intrinsics)]
 use async_trait::async_trait;
 use crossterm::{cursor, event, execute, style, terminal, tty::IsTty, QueueableCommand, ErrorKind};
-use textexcelport_core::{console, structures, grid};
+use textexcelport_core::{console,grid};
 use crossterm::event::KeyCode;
 use textexcelport_core::console::{Position, ClearType, Key};
 use std::{

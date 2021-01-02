@@ -3,6 +3,6 @@
 extern crate lazy_static;
 extern crate yard;
 pub mod console;
-pub mod structures;
 pub mod grid;
 pub mod exec;
+pub mod structures;

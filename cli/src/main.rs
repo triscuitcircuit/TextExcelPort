@@ -15,7 +15,7 @@ use std::cell::RefCell;
 use cli::TextConsole;
 
 fn main(){
-    let console = Rc::from(RefCell::from(TextConsole::from_stdio()));
+  //  let console = Rc::from(RefCell::from(TextConsole::from_stdio()));
     //let exit_code = Rc::from(RefCell::from(None));
 
     // let mut machine = {
@@ -27,5 +27,5 @@ fn main(){
 fn version() -> Result<i32,()>{
     println!("TextExcelPort {}", env!("CARGO_PKG_VERSION"));
     println!("Copyright 2019 Tristan Zippert");
-    Ok((0))
+    Ok(0)
 }

@@ -5,7 +5,7 @@ use std::cell::RefCell;
 pub type NodeDir<T> = Option<Rc<RefCell<Node<T>>>>;
 
 
-pub trait Tree<T>  {
+pub trait Tree<T: Clone>  {
     /// Sets the left node from a node
     fn set_left(&mut self, node: NodeDir<T>);
     /// Sets a right node from a node
@@ -26,13 +26,13 @@ pub trait Tree<T>  {
 ///
 /// right and left nodes connecting to it are optional references
 #[derive(Debug)]
-pub struct Node<T>  {
+pub struct Node<T: Clone>  {
     pub key: u32,
     data: T,
     pub left: NodeDir<T>,
     pub right: NodeDir<T>
 }
-impl<T> Node<T>  {
+impl<T: Clone> Node<T>  {
     pub fn new(key: u32, data: T)-> Self{
         Node{
             key,
@@ -44,8 +44,11 @@ impl<T> Node<T>  {
     pub fn get_key(&self) ->u32{
         self.key
     }
+    pub fn get_data(&self)->T{
+        self.data.clone()
+    }
 }
-impl<T> Tree<T> for Node<T>  {
+impl<T: Clone> Tree<T> for Node<T>  {
     /// Function to set the left-most branch node to another NodeDir
     fn set_left(&mut self, node: NodeDir<T>){
         // c_node is the current node selected on the Node

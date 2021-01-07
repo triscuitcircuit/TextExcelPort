@@ -6,3 +6,4 @@ pub mod console;
 pub mod grid;
 pub mod exec;
 pub mod structures;
+pub mod interpreter;

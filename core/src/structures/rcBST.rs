@@ -4,43 +4,11 @@ use crate::structures::rc_node::{NodeDir, Node, Tree};
 
 /// Public trait that houses methods that are used with Tree classes
 #[derive(Debug)]
-pub struct BST<T>  {
+pub struct BST<T: Clone>  {
     root: NodeDir<T>,
     pub count: u32
 }
-impl<T> Tree<T> for BST<T>  {
-    /// Function to set the left-most branch node to another NodeDir
-    fn set_left(&mut self, node: NodeDir<T>){
-        self.root.as_ref().unwrap()
-            .borrow_mut().left = node
-    }
-    /// Function to set the right-most branch node to another NodeDir
-    fn set_right(&mut self, node: NodeDir<T>){
-        self.root.as_ref().unwrap()
-            .borrow_mut().right = node
-    }
-
-    fn get_left(&self) -> NodeDir<T>{
-        self.root.as_ref().unwrap()
-            .borrow_mut().left.clone()
-    }
-
-    fn get_right(&self) -> NodeDir<T>{
-        self.root.as_ref().unwrap()
-            .borrow_mut().right.clone()
-    }
-
-    fn is_right(&self) -> bool {
-        self.root.as_ref().unwrap()
-            .borrow_mut().right.is_some()
-    }
-
-    fn is_left(&self) -> bool {
-        self.root.as_ref().unwrap()
-            .borrow_mut().left.is_some()
-    }
-}
-impl<T> BST<T>  {
+impl<T: Clone> BST<T>  {
     /// Initialize BST with nothing
     /// the next value added is automatically the root
     pub fn new()->Self{
@@ -87,7 +55,7 @@ impl<T> BST<T>  {
             if let None = inner_value.right {
                 inner_value.set_right(self.new_node_dir(kv_p.0,kv_p.1))
             }else{
-                let right = Rc::clone(inner_value.left
+                let right = Rc::clone(inner_value.right
                     .as_ref().unwrap());
                 self.recursive_add(kv_p,right);
             }
@@ -146,7 +114,7 @@ impl<T> BST<T>  {
         while let Some(node) = next{
             next = {
                 let node_key = node.borrow().key;
-                if &key < &node_key{
+                if &key <= &node_key{
                     node.borrow().left.clone()
                 }else {
                     node.borrow().right.clone()
@@ -156,9 +124,59 @@ impl<T> BST<T>  {
         }
         last
     }
-}
-pub fn sort<T>(arr: Vec<T>){
-    unimplemented!()
+    ///Using pointers, the input array is the output
+    pub fn inorder_sort(&self, arr: &mut Vec<T>){
+        self.inorder(&self.root,arr)
+    }
+    ///Helper method for the inorder sort and inorder traversal.
+    ///It uses cloning to get the data from the node since its not public
+    fn inorder(&self, node: &NodeDir<T>, arr: &mut Vec<T>){
+        if let Some(node) = node{
+            self.inorder(&node.borrow().left,arr);
+            arr.push(node.borrow().get_data());
+            self.inorder(&node.borrow().right,arr);
+        }
+    }
+    ///Using pointers, the input array is the output
+    /// It uses cloning to get the data from the node since the data isn't public
+    pub fn postorder_sort(&self, arr: &mut Vec<T>){
+        self.postorder(&self.root, arr)
+    }
+    ///Helper method for preorder that's recursive. For free would work as well
+    fn postorder(&self, node: &NodeDir<T>, arr: &mut Vec<T>){
+        if let Some(node) = node{
+            self.postorder(&node.borrow().left,arr);
+            self.postorder(&node.borrow().right,arr);
+            arr.push(node.borrow().get_data());
+        }
+    }
+    pub fn preorder_sort(&self, arr: &mut Vec<T>){
+        self.preorder(&self.root, arr)
+    }
+    fn preorder(&self, node: &NodeDir<T>, arr: &mut Vec<T>){
+        if let Some(node) = node{
+            arr.push(node.borrow().get_data());
+            self.preorder(&node.borrow().left,arr);
+            self.preorder(&node.borrow().right,arr);
+        }
+    }
+    pub fn get_left(&self) -> NodeDir<T>{
+        self.root.as_ref().unwrap()
+            .borrow().left.clone()
+    }
+
+    pub fn get_right(&self) -> NodeDir<T>{
+        self.root.as_ref().unwrap()
+            .borrow().right.clone()
+    }
+    pub fn is_right(&self)->bool{
+        self.root.as_ref().unwrap()
+            .borrow().right.is_some()
+    }
+    pub fn is_left(&self)-> bool{
+        self.root.as_ref().unwrap()
+            .borrow().left.is_some()
+    }
 }
 // let node = if let Some(node) = node {
 //     node

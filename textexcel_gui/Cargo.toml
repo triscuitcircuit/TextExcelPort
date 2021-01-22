@@ -1,5 +1,5 @@
 [package]
-name = "gui"
+name = "textexcel_gui"
 version = "0.0.6"
 authors = ["tzip"]
 edition = "2018"
@@ -12,3 +12,4 @@ iced = {version = "*", features = ["canvas", "tokio", "debug","svg"]}
 iced_native = "*"
 getopts = "0.2.21"
 textexcelport_core = {version = "0.1.0", path = "../core" }
+env_logger = "0.8.2"

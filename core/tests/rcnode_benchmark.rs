@@ -1,6 +1,6 @@
 #![feature(test)]
 extern crate test;
-use textexcelport_core::structures::rcBST::{BST};
+use textexcelport_core::structures::rc_bst::{BST};
 use test::Bencher;
 
 #[bench]

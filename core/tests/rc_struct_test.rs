@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod rc_bst_test {
-    use textexcelport_core::structures::rcBST::{BST};
+    use textexcelport_core::structures::rc_bst::{BST};
 
     #[test]
     fn add_one_count() {

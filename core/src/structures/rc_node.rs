@@ -1,11 +1,13 @@
 use std::rc::Rc;
 use std::cell::RefCell;
+use core::fmt;
+use serde::export::Formatter;
 
 ///Optional reference to another Node of generic T type
 pub type NodeDir<T> = Option<Rc<RefCell<Node<T>>>>;
 
 
-pub trait Tree<T: Clone>  {
+pub trait Tree<T: Clone + ::std::fmt::Debug>  {
     /// Sets the left node from a node
     fn set_left(&mut self, node: NodeDir<T>);
     /// Sets a right node from a node
@@ -26,13 +28,13 @@ pub trait Tree<T: Clone>  {
 ///
 /// right and left nodes connecting to it are optional references
 #[derive(Debug)]
-pub struct Node<T: Clone>  {
+pub struct Node<T: Clone + ::std::fmt::Debug>  {
     pub key: u32,
     data: T,
     pub left: NodeDir<T>,
     pub right: NodeDir<T>
 }
-impl<T: Clone> Node<T>  {
+impl<T: Clone + ::std::fmt::Debug> Node<T>  {
     pub fn new(key: u32, data: T)-> Self{
         Node{
             key,
@@ -48,7 +50,7 @@ impl<T: Clone> Node<T>  {
         self.data.clone()
     }
 }
-impl<T: Clone> Tree<T> for Node<T>  {
+impl<T: Clone + ::std::fmt::Debug> Tree<T> for Node<T>  {
     /// Function to set the left-most branch node to another NodeDir
     fn set_left(&mut self, node: NodeDir<T>){
         // c_node is the current node selected on the Node
@@ -73,5 +75,10 @@ impl<T: Clone> Tree<T> for Node<T>  {
     }
     fn is_left(&self) -> bool {
         self.left.is_some()
+    }
+}
+impl<T:Clone + ::std::fmt::Debug> fmt::Display for Node<T>{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        unimplemented!()
     }
 }

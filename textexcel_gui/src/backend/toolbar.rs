@@ -23,14 +23,14 @@ impl ToolBar{
                         .style(styles::Button::ToolBar),
                 )
                 .push(
-                  Button::new(&mut self.edit_button, Text::new("Edit"))
+                  Button::new(&mut self.edit_button, Text::new("Edit Sheet"))
                       .on_press(Message::ViewEditScreen)
                       .style(styles::Button::ToolBar)
                 )
                 .push(
                     Button::new(&mut self.macro_button,Text::new("Macro"))
-                        .style(styles::Button::ToolBar)
                         .on_press(Message::ViewMacroScreen)
+                        .style(styles::Button::ToolBar)
                 ),
 
         )

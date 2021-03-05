@@ -1,5 +1,6 @@
 [workspace]
 members =[
+    "textexcel_druid",
     "textexcel_gui",
     "cli"
 ]

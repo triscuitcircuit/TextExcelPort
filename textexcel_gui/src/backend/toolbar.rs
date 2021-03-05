@@ -8,7 +8,8 @@ use crate::backend::messages::Message;
 pub struct ToolBar{
     file_button: button::State,
     edit_button: button::State,
-    macro_button: button::State
+    macro_button: button::State,
+    stat_button: button::State,
 }
 impl ToolBar{
     pub fn view(&mut self) -> Container<Message>{
@@ -30,6 +31,11 @@ impl ToolBar{
                 .push(
                     Button::new(&mut self.macro_button,Text::new("Macro"))
                         .on_press(Message::ViewMacroScreen)
+                        .style(styles::Button::ToolBar)
+                )
+                .push(
+                    Button::new(&mut self.stat_button,Text::new("Stat"))
+                        .on_press(Message::ViewStatScreen)
                         .style(styles::Button::ToolBar)
                 ),
 

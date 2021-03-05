@@ -8,12 +8,16 @@ use std::collections::HashMap;
 use crate::backend::messages::Message;
 use crate::backend::{styles, toolbar};
 use crate::backend::macro_screen::MacroScreen;
-use crate::backend::display::display_file::{MacroDisplay, SheetDisplay};
+use crate::backend::display::display_file::{MacroDisplay, SheetDisplay, SelectableButton, StatDisplay};
+use iced_native::keyboard::KeyCode;
+use textexcelport_core::statcrunching::iqr::iqr_calc_string;
+use textexcelport_core::statcrunching::{parse, StatError};
 
 enum ScreenType{
     File,
     Sheet,
-    Macro
+    Macro,
+    Stat
 }
 impl Default for ScreenType{
     fn default() -> Self{
@@ -25,7 +29,8 @@ pub struct Textexcel{
     toolbar: toolbar::ToolBar,
     selected_screen: ScreenType,
     macro_screen: MacroDisplay,
-    sheet_screen: SheetDisplay
+    stat_screen: StatDisplay,
+    pub sheet_screen: SheetDisplay
 
 }
 impl Application for Textexcel{
@@ -36,11 +41,13 @@ impl Application for Textexcel{
     fn new(flags: Self::Flags) -> (Self, Command<Self::Message>) {
         let macro_screen = MacroDisplay::new();
         let sheet_screen = SheetDisplay::new();
+        let stat_screen = StatDisplay::new();
         (
             Self{
                 toolbar: toolbar::ToolBar::default(),
                 selected_screen: ScreenType::default(),
                 macro_screen,
+                stat_screen,
                 sheet_screen
             },
             Command::none()
@@ -63,7 +70,36 @@ impl Application for Textexcel{
             Message::ViewEditScreen =>{
                 self.selected_screen = ScreenType::Sheet
             }
+            Message::RemoveSheet=>{
+                let a = self.sheet_screen.work_sheet.pop();
+            }
+            Message::NewSheet=> {
+                let name: String = format!("test {}",self.sheet_screen.sheets_created).to_string();
+                self.sheet_screen.work_sheet.push(
+                    SelectableButton::new(self.sheet_screen.sheets_created,name));
+                self.sheet_screen.sheets_created += 1;
+            }
+            Message::ViewStatScreen=>{
+                self.selected_screen = ScreenType::Stat
+            }
+            Message::IqrSubmit =>{
+                let delimiter = self.stat_screen.delimiter_value.as_str().clone();
+                self.stat_screen.output = if delimiter.is_empty(){
+                    "No delimiter provided".to_string()
+                }else {
+                    if self.stat_screen.input_value.is_empty(){
+                        "No values provided".to_string()
+                    }else {
+                        let a = parse(&*self.stat_screen.input_value, delimiter);
+                        match iqr_calc_string(a){
+                            Ok(e) => {e}
+                            Err(e) => {format!("{:#?}",e)}
+                        }
+                    }
+                }
+            }
             Message::MacroScreen(ms)=> self.macro_screen.update(ms),
+            Message::StatScreen(ms) => self.stat_screen.update(ms),
             _=> {}
         }
         Command::none()
@@ -76,6 +112,9 @@ impl Application for Textexcel{
             .align_items(Align::Center)
             .push(self.toolbar.view())
             .push(match &self.selected_screen{
+                ScreenType::Stat => Container::new(
+                    self.stat_screen.view()
+                ),
                 ScreenType::Macro => Container::new(
                     self.macro_screen.view()
                 ),
@@ -93,5 +132,9 @@ impl Application for Textexcel{
 
 
 fn handle_hotkey(key_code: keyboard::KeyCode)-> Option<Message>{
-    unimplemented!()
+    match key_code{
+        KeyCode::Copy => {None}
+        KeyCode::LControl | KeyCode::Key1 => {None}
+        _ => None,
+    }
 }

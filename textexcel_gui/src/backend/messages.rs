@@ -3,13 +3,19 @@ use iced::pane_grid;
 #[derive(Debug, Clone)]
 pub enum Message {
     Save,
+    NewSheet,
+    RemoveSheet,
     ViewMacroScreen,
     ViewFileScreen,
     ViewSaveScreen,
     ViewEditScreen,
+    ViewStatScreen,
     MacroScreen(MacroMessage),
+    IqrSubmit,
+    DeviationSubmit,
     FileScreen(FileMessage),
-    SheetScreen(SheetMessage)
+    SheetScreen(SheetMessage),
+    StatScreen(StatMessage)
     // Split(pane_grid::Axis, pane_grid::Pane),
     // SplitFocused(pane_grid::Axis),
     // FocusAdjacent(pane_grid::Direction),
@@ -25,6 +31,15 @@ pub enum MacroMessage{
     Submitted(bool),
     MacroHasBeenSaved
 }
+#[derive(Debug, Clone)]
+pub enum StatMessage{
+    DelimiterChange(String),
+    ValuesChange(String),
+    DeviationSubmit,
+    IqrSubmit,
+    MacroHasBeenSaved
+}
+
 #[derive(Debug, Clone)]
 pub enum SheetMessage{
     Changed(String),

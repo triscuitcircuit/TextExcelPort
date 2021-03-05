@@ -1,8 +1,8 @@
 use yard::{parser, evaluator};
 use serde::{Serialize, Deserialize};
 use serde_json;
-use serde_json::value::Value::Array;
 use lazy_static::lazy_static;
+
 
 use std::{
   fs,fs::{File}, borrow::Borrow, path::Path,
@@ -12,6 +12,18 @@ use std::{
 };
 use std::default::default;
 use crate::exec::*;
+
+
+pub type Spreadcell = Arc<RefCell<Cell>>;
+
+pub struct WorkBook{
+    sheets: Vec<Worksheet>
+}
+
+pub struct Worksheet{
+    cells: Vec<Spreadcell>
+}
+
 
 lazy_static!{
     pub static ref GRID: Mutex<Vec<Vec<Cell>>> = Mutex::new(vec![vec![Cell::Empty; 17]; 17]);

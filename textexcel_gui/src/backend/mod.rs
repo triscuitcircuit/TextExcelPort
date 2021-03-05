@@ -5,3 +5,4 @@ pub mod messages;
 pub mod macro_screen;
 pub mod filescreen;
 pub mod display;
+pub mod stat_screen;

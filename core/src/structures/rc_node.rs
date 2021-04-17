@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 use core::fmt;
-use serde::export::Formatter;
+//use serde::export::Formatter;
 
 ///Optional reference to another Node of generic T type
 pub type NodeDir<T> = Option<Rc<RefCell<Node<T>>>>;
@@ -77,8 +77,4 @@ impl<T: Clone + ::std::fmt::Debug> Tree<T> for Node<T>  {
         self.left.is_some()
     }
 }
-impl<T:Clone + ::std::fmt::Debug> fmt::Display for Node<T>{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        unimplemented!()
-    }
 }

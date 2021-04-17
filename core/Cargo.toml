@@ -3,3 +3,16 @@ name = "textexcelport_core"
 version = "0.1.0"
 authors = ["Triscuit <54428989+Triscuit-circuit@users.noreply.github.com>"]
 edition = "2018"
+
+[dependencies]
+indextree = "4.3.1"
+async-trait = "0.1"
+thiserror = "1.0"
+time = { version = "0.2", features = ["std"] }
+eval = "0.4.3"
+lazy_static = "1.4.0"
+yard = "0.2.5"
+serde = { version = "1.0.90", features = ["derive","rc"] }
+serde_json = "1.0"
+dmsort = "1.0.0"
+quickersort = "3.0.1"

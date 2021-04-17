@@ -77,4 +77,3 @@ impl<T: Clone + ::std::fmt::Debug> Tree<T> for Node<T>  {
         self.left.is_some()
     }
 }
-}

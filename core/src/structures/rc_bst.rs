@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use crate::structures::rc_node::{NodeDir, Node, Tree};
 use core::fmt;
-use serde::export::Formatter;
+//use serde::export::Formatter;
 
 /// Public trait that houses methods that are used with Tree classes
 #[derive(Debug)]
@@ -178,12 +178,6 @@ impl<T: Clone + ::std::fmt::Debug> BST<T>  {
     pub fn is_left(&self)-> bool{
         self.root.as_ref().unwrap()
             .borrow().left.is_some()
-    }
-}
-impl<T: Clone + ::std::fmt::Debug> fmt::Display for BST<T>{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f,"count: {}",self.count)?;
-        Ok(())
     }
 }
 // let node = if let Some(node) = node {

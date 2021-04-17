@@ -1,0 +1,5 @@
+[package]
+name = "textexcelport_core"
+version = "0.1.0"
+authors = ["Triscuit <54428989+Triscuit-circuit@users.noreply.github.com>"]
+edition = "2018"

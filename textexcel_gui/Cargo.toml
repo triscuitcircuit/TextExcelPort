@@ -12,5 +12,5 @@ iced = {version = "0.2.0", features = ["canvas", "tokio", "debug","svg"]}
 iced_native = "0.3.0"
 getopts = "0.2.21"
 textexcelport_core = {version = "0.1.0", path = "../core" }
-env_logger = "0.8.2"
+env_logger = "0.8.3"
 dmsort = "1.0.0"
